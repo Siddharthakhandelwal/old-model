@@ -20,10 +20,24 @@ app.add_middleware(
 )
 
 # Define request model
+from pydantic import BaseModel, Field, EmailStr
+import re
+
+def validate_phone(v):
+    pattern = r'^\+?1?\d{9,15}$'
+    if not re.match(pattern, v):
+        raise ValueError('Invalid phone number format')
+    return v
+
 class CallRequest(BaseModel):
-    name: str
-    number: str
-    mail: Optional[str] = None
+    name: str = Field(..., min_length=1, max_length=100)
+    number: str = Field(..., examples=["+1234567890"])
+    mail: Optional[EmailStr] = None
+
+    class Config:
+        @classmethod
+        def get_validators(cls):
+            yield validate_phone
 
 
 # Define response models
